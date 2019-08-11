@@ -17,16 +17,11 @@ package com.ww.roxiesample.presentation.notelist
 
 import com.ww.roxie.BaseViewModel
 import com.ww.roxie.Reducer
-import com.ww.roxiesample.domain.GetNoteListUseCase
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.rxkotlin.ofType
-import io.reactivex.rxkotlin.plusAssign
-import io.reactivex.schedulers.Schedulers
-import timber.log.Timber
+import com.ww.roxiesample.domain.GetNotesInteractor
 
 class NoteListViewModel(
     initialState: State?,
-    private val loadNoteListUseCase: GetNoteListUseCase
+    private val loadNoteListUseCase: GetNotesInteractor
 ) : BaseViewModel<Action, State>() {
 
     override val initialState = initialState ?: State(isIdle = true)
@@ -51,10 +46,10 @@ class NoteListViewModel(
     }
 
     init {
-        bindActions()
+    //    bindActions()
     }
 
-    private fun bindActions() {
+   /* private fun bindActions() {
         val loadNotesChange = actions.ofType<Action.LoadNotes>()
             .switchMap {
                 loadNoteListUseCase.loadAll()
@@ -75,5 +70,5 @@ class NoteListViewModel(
             .distinctUntilChanged()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(state::setValue, Timber::e)
-    }
+    }*/
 }

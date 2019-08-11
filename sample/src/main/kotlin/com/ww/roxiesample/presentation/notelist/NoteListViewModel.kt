@@ -17,7 +17,12 @@ package com.ww.roxiesample.presentation.notelist
 
 import com.ww.roxie.BaseViewModel
 import com.ww.roxie.Reducer
-import com.ww.roxiesample.domain.GetNotesInteractor
+import com.ww.roxiesample.domain.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class NoteListViewModel(
     initialState: State?,
@@ -26,7 +31,9 @@ class NoteListViewModel(
 
     override val initialState = initialState ?: State(isIdle = true)
 
+
     private val reducer: Reducer<State, Change> = { state, change ->
+        Timber.d("Change: $change")
         when (change) {
             is Change.Loading -> state.copy(
                 isIdle = false,
@@ -46,29 +53,30 @@ class NoteListViewModel(
     }
 
     init {
-    //    bindActions()
+        bindActions()
     }
 
-   /* private fun bindActions() {
-        val loadNotesChange = actions.ofType<Action.LoadNotes>()
-            .switchMap {
-                loadNoteListUseCase.loadAll()
-                    .subscribeOn(Schedulers.io())
-                    .toObservable()
-                    .map<Change> { Change.Notes(it) }
-                    .defaultIfEmpty(Change.Notes(emptyList()))
-                    .onErrorReturn { Change.Error(it) }
-                    .startWith(Change.Loading)
+
+    private fun bindActions() = GlobalScope.launch {
+        actions.consumeEach {
+            when (it) {
+                Action.LoadNotes -> bindGetNotesAction()
+                    .scan(initialState, reducer)
+                    .also { "After scan" }
+                    .filter { !it.isIdle }
+                    .distinctUntilChanged()
+                    .collect { viewState.postValue(it) }
             }
+        }
 
-        // to handle multiple Changes, use Observable.merge to merge them into a single stream:
-        // val allChanges = Observable.merge(loadNotesChange, ...)
+    }
 
-        disposables += loadNotesChange
-            .scan(initialState, reducer)
-            .filter { !it.isIdle }
-            .distinctUntilChanged()
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(state::setValue, Timber::e)
-    }*/
+
+    private fun bindGetNotesAction(): Flow<Change> = flow {
+        emit(Change.Loading)
+        when(val result = runInteractor(loadNoteListUseCase)) {
+            is Success -> emit(Change.Notes(result.data))
+            is Fail -> emit(Change.Error(result.throwable))
+        }
+    }
 }

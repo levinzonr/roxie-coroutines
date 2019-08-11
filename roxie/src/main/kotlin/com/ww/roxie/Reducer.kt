@@ -15,4 +15,4 @@
 */
 package com.ww.roxie
 
-typealias Reducer<S, C> = (state: S, change: C) -> S
+typealias Reducer<S, C> = suspend (state: S, change: C) -> S

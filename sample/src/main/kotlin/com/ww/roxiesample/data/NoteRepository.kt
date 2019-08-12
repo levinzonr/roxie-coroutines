@@ -22,7 +22,7 @@ import com.ww.roxiesample.domain.Note
  */
 object NoteRepository {
 
-    private var idCounter = 3L
+    private var idCounter = 4L
 
     private val notes = mutableListOf(
         Note(1, "note1"),
@@ -32,7 +32,8 @@ object NoteRepository {
 
 
     fun addNote(title: String) : Note {
-        val note = Note(++idCounter, title)
+        val note = Note(idCounter, title)
+        idCounter++
         notes.add(note)
         return note
     }

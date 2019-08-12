@@ -39,7 +39,6 @@ class NoteListViewModel(
             is Change.Loading -> state.copy(
                 isIdle = false,
                 isLoading = true,
-                notes = emptyList(),
                 isError = false
             )
             is Change.Notes -> state.copy(

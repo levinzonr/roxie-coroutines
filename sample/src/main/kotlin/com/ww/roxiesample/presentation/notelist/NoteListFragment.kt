@@ -25,6 +25,8 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ww.roxiesample.R
+import com.ww.roxiesample.domain.AddNoteInteractor
+import com.ww.roxiesample.domain.DeleteNoteInteractor
 import com.ww.roxiesample.domain.GetNotesInteractor
 import com.ww.roxiesample.domain.Note
 import kotlinx.android.synthetic.main.note_list.*
@@ -54,7 +56,7 @@ class NoteListFragment : Fragment() {
         setupRecyclerView()
 
         // Normally ViewModelFactory should be injected here along with its UseCases injected into it
-        viewModel = ViewModelProviders.of(this, NoteListViewModelFactory(null, GetNotesInteractor()))
+        viewModel = ViewModelProviders.of(this, NoteListViewModelFactory(null, GetNotesInteractor(), DeleteNoteInteractor(), AddNoteInteractor()))
             .get(NoteListViewModel::class.java)
 
         viewModel.observableState.observe(this, Observer { state ->
@@ -62,6 +64,10 @@ class NoteListFragment : Fragment() {
         })
 
         viewModel.dispatch(Action.LoadNotes)
+
+        addNoteBtn.setOnClickListener {
+            viewModel.dispatch(Action.AddNote("Test"))
+        }
     }
 
     private fun renderState(state: State) {
@@ -96,9 +102,6 @@ class NoteListFragment : Fragment() {
     }
 
     private fun onNoteClicked(note: Note) {
-       /* requireActivity().supportFragmentManager.beginTransaction()
-            .replace(R.id.container, NoteDetailFragment.newInstance(note.id))
-            .addToBackStack(null)
-            .commit()*/
+       viewModel.dispatch(Action.DeleteNote(note))
     }
 }

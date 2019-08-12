@@ -16,7 +16,10 @@
 package com.ww.roxiesample.presentation.notelist
 
 import com.ww.roxie.BaseAction
+import com.ww.roxiesample.domain.Note
 
 sealed class Action : BaseAction {
     object LoadNotes : Action()
+    data class DeleteNote(val note: Note): Action()
+    data class AddNote(val text: String) : Action()
 }

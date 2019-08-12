@@ -21,18 +21,22 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import org.intellij.lang.annotations.Flow
 
 /**
  * Store which manages business data and viewState.
  */
-abstract class BaseViewModel<A : BaseAction, S : BaseState> : ViewModel() {
+abstract class BaseViewModel<A : BaseAction, S : BaseState, C : BaseChange> : ViewModel() {
 
     protected val actions: Channel<A> = Channel()
+    protected val changes: List<Flow<C>> = listOf()
+
 
     protected abstract val initialState: S
+
+    protected abstract val reducer: Reducer<S, C>
 
 
     private val currentState: S
@@ -51,6 +55,15 @@ abstract class BaseViewModel<A : BaseAction, S : BaseState> : ViewModel() {
         }
     }
 
+    init {
+        GlobalScope.launch {
+            observeActions()
+                .scan(initialState, reducer)
+                .distinctUntilChanged()
+                .collect { viewState.postValue(it) }
+        }
+    }
+
     /**
      * Dispatches an action. This is the only way to trigger a viewState change.
      */
@@ -58,17 +71,20 @@ abstract class BaseViewModel<A : BaseAction, S : BaseState> : ViewModel() {
         GlobalScope.launch {
             Roxie.log("$tag: Received action: $action")
             actions.send(action)
-
         }
-        // actions.onNext(action)
     }
+
+    private suspend fun observeActions(): Flow<C> = flow {
+        actions.consumeEach {
+            emit(emitAction(it))
+        }
+    }.flattenConcat()
+
+
+    protected abstract fun emitAction(action: A): Flow<C>
 
 
     override fun onCleared() {
-        //  disposables.clear()
     }
 
-    protected suspend fun<A> Channel<A>.onReceive(action: (A) -> Unit) {
-        receiveOrNull()?.let(action)
-    }
 }

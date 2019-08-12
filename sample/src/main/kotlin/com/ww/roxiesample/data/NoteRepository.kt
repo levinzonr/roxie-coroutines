@@ -21,11 +21,21 @@ import com.ww.roxiesample.domain.Note
  * Normally we would implement a repository interface which is injected in the Domain layer
  */
 object NoteRepository {
+
+    private var idCounter = 3L
+
     private val notes = mutableListOf(
         Note(1, "note1"),
         Note(2, "note2"),
         Note(3, "note3")
     )
+
+
+    fun addNote(title: String) : Note {
+        val note = Note(++idCounter, title)
+        notes.add(note)
+        return note
+    }
 
     fun loadAll(): List<Note> = notes.toList()
 

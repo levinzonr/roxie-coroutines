@@ -17,15 +17,19 @@ package com.ww.roxiesample.presentation.notelist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.ww.roxiesample.domain.AddNoteInteractor
+import com.ww.roxiesample.domain.DeleteNoteInteractor
 import com.ww.roxiesample.domain.GetNotesInteractor
 
 class NoteListViewModelFactory(
     private val initialState: State?,
-    private val getNotesInteractor: GetNotesInteractor
+    private val getNotesInteractor: GetNotesInteractor,
+    private val deleteNoteInteractor: DeleteNoteInteractor,
+    private val addNoteInteractor: AddNoteInteractor
 ) : ViewModelProvider.NewInstanceFactory() {
 
     @Suppress("unchecked_cast")
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return NoteListViewModel(initialState, getNotesInteractor) as T
+        return NoteListViewModel(initialState, addNoteInteractor, deleteNoteInteractor, getNotesInteractor) as T
     }
 }

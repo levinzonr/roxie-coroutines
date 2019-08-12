@@ -15,10 +15,13 @@
 */
 package com.ww.roxiesample.presentation.notelist
 
+import com.ww.roxie.BaseChange
 import com.ww.roxiesample.domain.Note
 
-sealed class Change {
+sealed class Change : BaseChange {
     object Loading : Change()
     data class Notes(val notes: List<Note>) : Change()
     data class Error(val throwable: Throwable?) : Change()
+    data class NoteDeleted(val index: Long) : Change()
+    data class NoteAdded(val note: Note) : Change()
 }

@@ -54,7 +54,7 @@ class NoteListViewModel(
                 notes = state.notes.filterNot { it.id == change.index }
             )
             is Change.NoteAdded -> state.copy(
-                notes = state.notes.toMutableList().apply { add(change.note        ) }
+                notes = state.notes.toMutableList().apply { add(change.note) }
             )
         }
     }
@@ -73,26 +73,23 @@ class NoteListViewModel(
 
     private fun bindGetNotesAction(): Flow<Change> = flow {
         emit(Change.Loading)
-        when(val result = runInteractor(loadNoteListUseCase)) {
-            is Success -> emit(Change.Notes(result.data))
-            is Fail -> emit(Change.Error(result.throwable))
-        }
+        runInteractor(loadNoteListUseCase)
+            .isSuccess { emit(Change.Notes(it)) }
+            .isError { emit(Change.Error(it)) }
     }
 
     private fun bindDeleteNoteInteractor(note: Note) : Flow<Change> = flow {
         emit(Change.Loading)
         deleteNoteInteractor.input = DeleteNoteInteractor.Input(note)
-        when(val result = runInteractor(deleteNoteInteractor)) {
-            is Success -> emit(Change.NoteDeleted(result.data))
-            is Fail -> emit(Change.Error(result.throwable))
-        }
+        runInteractor(deleteNoteInteractor)
+            .isSuccess { emit(Change.NoteDeleted(it)) }
+            .isError { emit(Change.Error(it)) }
     }
 
     private fun bindAddNoteInteractor(text: String) : Flow<Change> = flow {
         addNoteInteractor.input = AddNoteInteractor.Input(text)
-        when(val result = runInteractor(addNoteInteractor)) {
-            is Success -> emit(Change.NoteAdded(result.data))
-            is Fail -> emit(Change.Error(result.throwable))
-        }
+        runInteractor(addNoteInteractor)
+            .isSuccess { emit(Change.NoteAdded(it)) }
+            .isError { emit(Change.Error(it)) }
     }
 }

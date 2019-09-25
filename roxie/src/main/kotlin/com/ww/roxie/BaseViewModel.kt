@@ -43,6 +43,7 @@ abstract class BaseViewModel<A : BaseAction, S : BaseState, C : BaseChange> : Vi
         get() = viewState.value ?: initialState
 
     protected val viewState = MutableLiveData<S>()
+
     private val tag by lazy { javaClass.simpleName }
 
     /**

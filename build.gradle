@@ -42,6 +42,7 @@ buildscript {
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
         classpath "org.jlleitschuh.gradle:ktlint-gradle:6.3.1"
+
     }
 }
 
@@ -86,3 +87,4 @@ ext {
     libModuleDesc = 'Lightweight Android library for building reactive apps.'
     libBintrayName = 'roxie'
 }
+

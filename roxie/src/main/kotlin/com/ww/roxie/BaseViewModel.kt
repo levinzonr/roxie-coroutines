@@ -56,13 +56,11 @@ abstract class BaseViewModel<A : BaseAction, S : BaseState, C : BaseChange> : Vi
         }
     }
 
-    init {
-        GlobalScope.launch {
-            observeActions()
-                .scan(initialState, reducer)
-                .distinctUntilChanged()
-                .collect { viewState.postValue(it) }
-        }
+    protected fun startActionsObserver() = GlobalScope.launch {
+        observeActions()
+            .scan(initialState, reducer)
+            .distinctUntilChanged()
+            .collect { viewState.postValue(it) }
     }
 
     /**

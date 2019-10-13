@@ -39,7 +39,7 @@ abstract class BaseViewModel<A : BaseAction, S : BaseState, C : BaseChange> : Vi
     protected abstract val reducer: Reducer<S, C>
 
 
-    private val currentState: S
+    protected val currentState: S
         get() = viewState.value ?: initialState
 
     protected val viewState = MutableLiveData<S>()
@@ -49,12 +49,23 @@ abstract class BaseViewModel<A : BaseAction, S : BaseState, C : BaseChange> : Vi
     /**
      * Returns the current viewState. It is equal to the last value returned by the store's reducer.
      */
-    val observableState: LiveData<S> = MediatorLiveData<S>().apply {
+
+    protected var _viewState = MediatorLiveData<S>().apply {
         addSource(viewState) { data ->
             Roxie.log("$tag: Received viewState: $data")
             setValue(data)
         }
     }
+    val observableState: LiveData<S> = _viewState
+
+
+
+
+    protected fun <T> addStateSource(source: LiveData<T>, onChanged: (T) -> Unit) {
+        _viewState.addSource(source, onChanged)
+    }
+
+
 
     protected fun startActionsObserver() = GlobalScope.launch {
         observeActions()

@@ -15,10 +15,8 @@
 */
 package cz.levinzonr.roxie
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
@@ -29,9 +27,7 @@ import kotlinx.coroutines.launch
  * Store which manages business data and viewState.
  */
 abstract class BaseViewModel<A : BaseAction, S : BaseState, C : BaseChange> : ViewModel() {
-
-    protected val actions: Channel<A> = Channel()
-    protected val changes: List<Flow<C>> = listOf()
+    protected val changes: Channel<C> = Channel()
 
 
     protected abstract val initialState: S
@@ -52,13 +48,10 @@ abstract class BaseViewModel<A : BaseAction, S : BaseState, C : BaseChange> : Vi
 
     protected var _viewState = MediatorLiveData<S>().apply {
         addSource(viewState) { data ->
-            Roxie.log("$tag: Received viewState: $data")
             setValue(data)
         }
     }
     val observableState: LiveData<S> = _viewState
-
-
 
 
     protected fun <T> addStateSource(source: LiveData<T>, onChanged: (T) -> Unit) {
@@ -66,30 +59,25 @@ abstract class BaseViewModel<A : BaseAction, S : BaseState, C : BaseChange> : Vi
     }
 
 
-
-    protected fun startActionsObserver() = GlobalScope.launch {
-        observeActions()
+    protected fun startActionsObserver() = viewModelScope.launch {
+        changes.consumeAsFlow()
+            .flowOn(Dispatchers.Main)
             .scan(initialState, reducer)
             .distinctUntilChanged()
-            .collect { viewState.postValue(it) }
+            .collect {
+                viewState.postValue(it)
+            }
     }
 
     /**
      * Dispatches an action. This is the only way to trigger a viewState change.
      */
     fun dispatch(action: A) {
-        GlobalScope.launch {
-            Roxie.log("$tag: Received action: $action")
-            actions.send(action)
+        viewModelScope.launch {
+            emitAction(action)
+                .collect { changes.send(it) }
         }
     }
-
-    private suspend fun observeActions(): Flow<C> = flow {
-        actions.consumeEach {
-            emit(emitAction(it))
-        }
-    }.flattenConcat()
-
 
     protected abstract fun emitAction(action: A): Flow<C>
 

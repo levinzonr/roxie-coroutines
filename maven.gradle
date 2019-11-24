@@ -1,6 +1,4 @@
 apply plugin: 'maven-publish' // Apply this plugin at the top of your library build.gradle
-def githubProperties = new Properties()
-githubProperties.load(new FileInputStream(rootProject.file("roxie/github.properties"))) //Set env variable GPR_USER & GPR_API_KEY if not adding a properties file
 
 def getVersionName = { ->
     return "1.0.0-test" // Replace with version Name
@@ -33,8 +31,8 @@ publishing {
                  ** gpr.usr=GITHUB_USER_ID & gpr.key=PERSONAL_ACCESS_TOKEN
                  ** Set env variable GPR_USER & GPR_API_KEY if not adding a properties file**/
 
-                username = githubProperties['gpr.usr'] ?: System.getenv("GPR_USER")
-                password = githubProperties['gpr.key'] ?: System.getenv("GPR_API_KEY")
+                username =  System.getenv("GPR_USER")
+                password =  System.getenv("GPR_API_KEY")
             }
         }
     }

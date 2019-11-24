@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: "org.jlleitschuh.gradle.ktlint"
-apply plugin: 'maven'
+apply from: '../maven.gradle'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -29,20 +29,4 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:${versions.coroutines}"
     testImplementation "junit:junit:$rootProject.ext.junitVersion"
     testImplementation 'org.amshove.kluent:kluent:1.45'
-}
-
-// applied specifically at the bottom
-apply from: './scripts/bintrayConfig.gradle'
-task installArchives(type: Upload) {
-    group = "maven"
-    description "Installs the artifacts to the local Maven repository."
-    configuration = configurations['archives']
-    repositories {
-        mavenDeployer {
-            pom.groupId = 'cz.levinzonr.roxie'
-            pom.artifactId = 'sdk'
-            pom.version = '1.4-LOCAL'
-            repository url: repositories.mavenLocal().url
-        }
-    }
 }

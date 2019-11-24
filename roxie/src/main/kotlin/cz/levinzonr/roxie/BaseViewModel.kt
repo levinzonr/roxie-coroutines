@@ -15,12 +15,19 @@
 */
 package cz.levinzonr.roxie
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.launch
 
 /**
@@ -29,11 +36,9 @@ import kotlinx.coroutines.launch
 abstract class BaseViewModel<A : BaseAction, S : BaseState, C : BaseChange> : ViewModel() {
     protected val changes: Channel<C> = Channel()
 
-
     protected abstract val initialState: S
 
     protected abstract val reducer: Reducer<S, C>
-
 
     protected val currentState: S
         get() = viewState.value ?: initialState
@@ -53,11 +58,9 @@ abstract class BaseViewModel<A : BaseAction, S : BaseState, C : BaseChange> : Vi
     }
     val observableState: LiveData<S> = _viewState
 
-
     protected fun <T> addStateSource(source: LiveData<T>, onChanged: (T) -> Unit) {
         _viewState.addSource(source, onChanged)
     }
-
 
     protected fun startActionsObserver() = viewModelScope.launch {
         changes.consumeAsFlow()
@@ -80,9 +83,4 @@ abstract class BaseViewModel<A : BaseAction, S : BaseState, C : BaseChange> : Vi
     }
 
     protected abstract fun emitAction(action: A): Flow<C>
-
-
-    override fun onCleared() {
-    }
-
 }

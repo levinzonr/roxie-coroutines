@@ -1,8 +1,6 @@
 package cz.levinzonr.roxie
 
 interface BaseChange {
-
-
     /**
      * Obfuscated string that only contains the class name and hash code (the latter to help
      * differentiate between repeated states).

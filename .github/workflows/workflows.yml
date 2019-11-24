@@ -19,7 +19,10 @@ jobs:
           ./gradlew dependencies
       - name: Build debug
         run: |
-          ./gradlew assembleLocalDebug
-      - name: Test debug
-        run: |
-          ./gradlew testLocalDebugUnitTest
+          ./gradlew assembleRelease
+  deploy:
+    runs-on: [ubuntu-latest]
+    needs: build
+    steps:
+      - name: Publish
+        run: ./gradlew publish

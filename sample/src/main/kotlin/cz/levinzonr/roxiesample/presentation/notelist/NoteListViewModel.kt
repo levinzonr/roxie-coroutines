@@ -15,21 +15,17 @@
 */
 package cz.levinzonr.roxiesample.presentation.notelist
 
-import cz.levinzonr.roxie.BaseViewModel
+import cz.levinzonr.roxie.RoxieViewModel
 import cz.levinzonr.roxie.Reducer
 import cz.levinzonr.roxiesample.domain.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import timber.log.Timber
 
 class NoteListViewModel(
     initialState: State?,
     private val addNoteInteractor: AddNoteInteractor,
     private val deleteNoteInteractor: DeleteNoteInteractor,
     private val loadNoteListUseCase: GetNotesInteractor
-) : BaseViewModel<Action, State, Change>() {
+) : RoxieViewModel<Action, State, Change>() {
 
     override val initialState = initialState ?: State(isIdle = true)
 

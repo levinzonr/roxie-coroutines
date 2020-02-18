@@ -33,7 +33,7 @@ import kotlinx.coroutines.launch
 /**
  * Store which manages business data and viewState.
  */
-abstract class BaseViewModel<A : BaseAction, S : BaseState, C : BaseChange> : ViewModel() {
+abstract class RoxieViewModel<A : BaseAction, S : BaseState, C : BaseChange> : ViewModel() {
     protected val changes: Channel<C> = Channel()
 
     protected abstract val initialState: S

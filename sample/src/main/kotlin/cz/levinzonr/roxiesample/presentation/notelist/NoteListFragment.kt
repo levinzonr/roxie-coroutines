@@ -56,14 +56,20 @@ class NoteListFragment : Fragment() {
         setupRecyclerView()
 
         // Normally ViewModelFactory should be injected here along with its UseCases injected into it
-        viewModel = ViewModelProviders.of(this, NoteListViewModelFactory(null, GetNotesInteractor(), DeleteNoteInteractor(), AddNoteInteractor()))
-            .get(NoteListViewModel::class.java)
+        viewModel = ViewModelProviders.of(
+            this,
+            NoteListViewModelFactory(
+                null,
+                GetNotesInteractor(),
+                DeleteNoteInteractor(),
+                AddNoteInteractor()
+            )
+        ).get(NoteListViewModel::class.java)
 
         viewModel.observableState.observe(this, Observer { state ->
             state?.let { renderState(state) }
         })
 
-        viewModel.dispatch(Action.LoadNotes)
 
         addNoteBtn.setOnClickListener {
             viewModel.dispatch(Action.AddNote("Test"))
@@ -102,6 +108,6 @@ class NoteListFragment : Fragment() {
     }
 
     private fun onNoteClicked(note: Note) {
-       viewModel.dispatch(Action.DeleteNote(note))
+        viewModel.dispatch(Action.DeleteNote(note))
     }
 }

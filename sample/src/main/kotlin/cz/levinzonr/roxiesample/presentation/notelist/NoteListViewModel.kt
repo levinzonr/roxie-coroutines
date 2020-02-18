@@ -55,7 +55,10 @@ class NoteListViewModel(
         }
     }
 
-
+    init {
+        startActionsObserver()
+        dispatch(Action.LoadNotes)
+    }
 
     override fun emitAction(action: Action): Flow<Change> {
         return when(action) {

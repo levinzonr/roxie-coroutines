@@ -1,7 +1,7 @@
 apply plugin: 'maven-publish' // Apply this plugin at the top of your library build.gradle
 
 def getVersionName = { ->
-    return "1.0.0-test2" // Replace with version Name
+    return "1.0.1" // Replace with version Name
 }
 
 def getArtificatId = { ->

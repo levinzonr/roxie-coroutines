@@ -17,14 +17,13 @@ package cz.levinzonr.roxiesample.presentation.notelist
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
-import com.nhaarman.mockito_kotlin.inOrder
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.verifyNoMoreInteractions
-import com.nhaarman.mockito_kotlin.whenever
-import cz.levinzonr.roxiesample.domain.GetNoteListUseCase
+import cz.levinzonr.roxiesample.domain.GetNotesInteractor
 import cz.levinzonr.roxiesample.domain.Note
-import cz.levinzonr.roxiesample.presentation.RxTestSchedulerRule
-import io.reactivex.Single
+import cz.levinzonr.roxiesample.domain.Success
+import cz.levinzonr.roxiesample.presentation.MainCoroutineRule
+import io.mockk.coEvery
+import io.mockk.mockk
+import io.mockk.verifyOrder
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -34,7 +33,7 @@ class NoteListViewModelTest {
     val instantExecutorRule = InstantTaskExecutorRule()
 
     @get:Rule
-    val testSchedulerRule = RxTestSchedulerRule()
+    val mainCoroutineRule = MainCoroutineRule()
 
     private lateinit var testSubject: NoteListViewModel
 
@@ -42,13 +41,14 @@ class NoteListViewModelTest {
 
     private val loadingState = State(isLoading = true)
 
-    private val noteListUseCase = mock<GetNoteListUseCase>()
+    private val noteListUseCase = mockk<GetNotesInteractor>()
 
-    private val observer = mock<Observer<State>>()
+    private val observer = mockk<Observer<State>>(relaxUnitFun = true)
 
     @Before
     fun setUp() {
-        testSubject = NoteListViewModel(idleState, noteListUseCase)
+        coEvery { noteListUseCase.invoke() } returns Success(listOf())
+        testSubject = NoteListViewModel(idleState, mockk(), mockk(), noteListUseCase)
         testSubject.observableState.observeForever(observer)
     }
 
@@ -58,35 +58,17 @@ class NoteListViewModelTest {
         val noteList = listOf(Note(1L, "dummy text"))
         val successState = State(noteList)
 
-        whenever(noteListUseCase.loadAll()).thenReturn(Single.just(noteList))
+        coEvery { noteListUseCase.invoke() } returns Success(noteList)
 
         // WHEN
         testSubject.dispatch(Action.LoadNotes)
-        testSchedulerRule.triggerActions()
 
         // THEN
-        inOrder(observer) {
-            verify(observer).onChanged(loadingState)
-            verify(observer).onChanged(successState)
+        verifyOrder {
+            observer.onChanged(loadingState)
+            observer.onChanged(successState)
         }
-        verifyNoMoreInteractions(observer)
     }
 
-    @Test
-    fun `Given notes failed to load, when action LoadNotes is received, then State contains error`() {
-        // GIVEN
-        whenever(noteListUseCase.loadAll()).thenReturn(Single.error(RuntimeException()))
-        val errorState = State(isError = true)
 
-        // WHEN
-        testSubject.dispatch(Action.LoadNotes)
-        testSchedulerRule.triggerActions()
-
-        // THEN
-        inOrder(observer) {
-            verify(observer).onChanged(loadingState)
-            verify(observer).onChanged(errorState)
-        }
-        verifyNoMoreInteractions(observer)
-    }
 }

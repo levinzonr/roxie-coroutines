@@ -41,7 +41,9 @@ abstract class RoxieViewModel<A : BaseAction, S : BaseState, C : BaseChange> : V
             setValue(state)
         }
     }
-    val observableState: LiveData<S> = _viewState
+
+
+    open val observableState: LiveData<S> = _viewState
 
     protected fun <T> addStateSource(source: LiveData<T>, onChanged: (T) -> Unit) {
         _viewState.addSource(source, onChanged)

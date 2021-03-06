@@ -2,6 +2,7 @@ package cz.levinzonr.roxiesample.presentation.notelist
 
 import cz.levinzonr.roxie.BaseAction
 import cz.levinzonr.roxie.BaseChange
+import cz.levinzonr.roxie.BaseEvent
 import cz.levinzonr.roxie.BaseState
 import cz.levinzonr.roxiesample.domain.Note
 
@@ -10,8 +11,13 @@ data class State(
     val notes: List<Note> = listOf(),
     val isIdle: Boolean = false,
     val isLoading: Boolean = false,
-    val isError: Boolean = false
+    val isError: Boolean = false,
 ) : BaseState
+
+
+sealed class Event: BaseEvent {
+    object NoteAdded: Event()
+}
 
 sealed class Change : BaseChange {
     object Loading : Change()

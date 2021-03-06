@@ -1,7 +1,7 @@
 buildscript {
     ext.versions = [
-            kotlin             : '1.4.10',
-            coroutines         : '1.3.9',
+            kotlin             : '1.4.30',
+            coroutines         : '1.4.3',
             constraint_layout  : '2.0.0-beta2',
             dagger             : "2.24",
             lifecycle          : "2.1.0-rc01",
@@ -78,13 +78,7 @@ ext {
     junitVersion = '4.12'
 
     // Roxie Library
-    libVersionCode = 2
-    libVersionName = '0.4.0'
-
-    libPomUrl = 'https://github.com/ww-tech/roxie'
-    libGithubRepo = 'ww-tech/roxie'
-    libModuleName = 'roxie'
-    libModuleDesc = 'Lightweight Android library for building reactive apps.'
-    libBintrayName = 'roxie'
+    libVersionCode = 3
+    libVersionName = '1.1.0'
 }
 

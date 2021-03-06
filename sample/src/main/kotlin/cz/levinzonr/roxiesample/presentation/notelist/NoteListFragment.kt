@@ -30,6 +30,9 @@ import cz.levinzonr.roxiesample.domain.DeleteNoteInteractor
 import cz.levinzonr.roxiesample.domain.GetNotesInteractor
 import cz.levinzonr.roxiesample.domain.Note
 import kotlinx.android.synthetic.main.note_list.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 class NoteListFragment : Fragment() {
 
@@ -40,6 +43,7 @@ class NoteListFragment : Fragment() {
     companion object {
         fun newInstance() = NoteListFragment()
     }
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     private lateinit var viewModel: NoteListViewModel
 
@@ -54,7 +58,6 @@ class NoteListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
-
         // Normally ViewModelFactory should be injected here along with its UseCases injected into it
         viewModel = ViewModelProviders.of(
             this,
@@ -66,14 +69,22 @@ class NoteListFragment : Fragment() {
             )
         ).get(NoteListViewModel::class.java)
 
-        viewModel.observableState.observe(this, Observer { state ->
-            state?.let { renderState(state) }
-        })
+        viewModel.stateFlow.onEach { state ->
+            renderState(state)
+        }.launchIn(scope)
 
+        viewModel.eventFlow.onEach {
+            Toast.makeText( requireContext(), "Note Added", Toast.LENGTH_SHORT).show()
+        }.launchIn(scope)
 
         addNoteBtn.setOnClickListener {
             viewModel.dispatch(Action.AddNote("Test"))
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        scope.cancel()
     }
 
     private fun renderState(state: State) {

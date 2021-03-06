@@ -28,3 +28,7 @@ interface BaseState {
      */
     fun obfuscatedString() = "${javaClass.simpleName}@${hashCode()}"
 }
+
+interface BaseEvent {
+
+}

@@ -5,21 +5,14 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.scan
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 /**
  * Store which manages business data and viewState.
  */
-abstract class RoxieViewModel<A : BaseAction, S : BaseState, C : BaseChange> : ViewModel() {
-    protected val changes: Channel<C> = Channel()
+abstract class RoxieViewModel<A : BaseAction, S: BaseState, C : BaseChange> : ViewModel() {
+    private val changes: MutableSharedFlow<C> = MutableSharedFlow()
 
     protected abstract val initialState: S
     protected abstract val reducer: Reducer<S, C>
@@ -50,13 +43,10 @@ abstract class RoxieViewModel<A : BaseAction, S : BaseState, C : BaseChange> : V
     }
 
     protected fun startActionsObserver() = viewModelScope.launch {
-        changes.consumeAsFlow()
-            .flowOn(Dispatchers.Main)
-            .scan(initialState, reducer)
+        changes.scan(initialState, reducer)
             .distinctUntilChanged()
-            .collect {
-                viewState.postValue(it)
-            }
+            .collect { viewState.postValue(it) }
+
     }
 
     /**
@@ -66,7 +56,7 @@ abstract class RoxieViewModel<A : BaseAction, S : BaseState, C : BaseChange> : V
         Roxie.log("$tag: Received action: $action")
         viewModelScope.launch {
             emitAction(action)
-                .collect { changes.send(it) }
+                .collect { changes.emit(it) }
         }
     }
 

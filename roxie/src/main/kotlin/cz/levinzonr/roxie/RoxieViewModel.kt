@@ -11,16 +11,16 @@ import kotlinx.coroutines.launch
 /**
  * Store which manages business data and viewState.
  */
-abstract class RoxieViewModel<A : BaseAction, S: BaseState, C : BaseChange> : ViewModel() {
+abstract class RoxieViewModel<A : BaseAction, S : BaseState, E : BaseEvent, C : BaseChange>() :
+    ViewModel() {
     private val changes: MutableSharedFlow<C> = MutableSharedFlow()
 
     protected abstract val initialState: S
     protected abstract val reducer: Reducer<S, C>
 
     protected val currentState: S
-        get() = viewState.value ?: initialState
+        get() = _stateFlow.value
 
-    protected val viewState = MutableLiveData<S>()
 
     private val tag by lazy { javaClass.simpleName }
 
@@ -28,24 +28,16 @@ abstract class RoxieViewModel<A : BaseAction, S: BaseState, C : BaseChange> : Vi
      * Returns the current viewState. It is equal to the last value returned by the store's reducer.
      */
 
-    protected var _viewState = MediatorLiveData<S>().apply {
-        addSource(viewState) { state ->
-            Roxie.log("$tag: Received state: $state")
-            setValue(state)
-        }
-    }
+    private val _stateFlow by lazy { MutableStateFlow<S>(this.initialState) }
+    private val _eventFlow by lazy { MutableSharedFlow<E>() }
 
 
-    open val observableState: LiveData<S> = _viewState
-
-    protected fun <T> addStateSource(source: LiveData<T>, onChanged: (T) -> Unit) {
-        _viewState.addSource(source, onChanged)
-    }
-
+    val stateFlow: Flow<S> = _stateFlow
+    val eventFlow: Flow<E> = _eventFlow
     protected fun startActionsObserver() = viewModelScope.launch {
         changes.scan(initialState, reducer)
             .distinctUntilChanged()
-            .collect { viewState.postValue(it) }
+            .collect { _stateFlow.emit(it) }
 
     }
 
@@ -58,6 +50,11 @@ abstract class RoxieViewModel<A : BaseAction, S: BaseState, C : BaseChange> : Vi
             emitAction(action)
                 .collect { changes.emit(it) }
         }
+    }
+
+    fun S.withEvent(e: E): S {
+        viewModelScope.launch { _eventFlow.emit(e) }
+        return this
     }
 
     protected abstract fun emitAction(action: A): Flow<C>

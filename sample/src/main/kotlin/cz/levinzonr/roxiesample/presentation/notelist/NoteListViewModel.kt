@@ -25,7 +25,7 @@ class NoteListViewModel(
     private val addNoteInteractor: AddNoteInteractor,
     private val deleteNoteInteractor: DeleteNoteInteractor,
     private val loadNoteListUseCase: GetNotesInteractor
-) : RoxieViewModel<Action, State, Change>() {
+) : RoxieViewModel<Action, State, Event, Change>() {
 
     override val initialState = initialState ?: State(isIdle = true)
 
@@ -51,7 +51,7 @@ class NoteListViewModel(
             )
             is Change.NoteAdded -> state.copy(
                 notes = state.notes.toMutableList().apply { add(change.note) }
-            )
+            ).withEvent(Event.NoteAdded)
         }
     }
 
